@@ -1,0 +1,18 @@
+[project]
+name = "venv"
+version = "0.1.0"
+description = "Collect research papers from multiple repositories based on keyword search"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.32.0",
+    "ipython>=9.4.0",
+    "matplotlib>1.5.2",
+    "pandas>=2.1.0",
+    "python-box>=7.3.1",
+    "xmltodict>=0.13.0",
+    "pyyaml==6.0.1",
+    "rich>=14.0.0",
+    "tqdm>=4.67.0",
+    "python-dotenv>=1.1.0",
+]
