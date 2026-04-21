@@ -2,12 +2,72 @@
 
 Analysis and simulations around mortgage decisions, helping understand the real cost of buying a house over time.
 
-## Current Scripts
+## Files
 
 | File | Description |
 |------|-------------|
-| `buy_house.py` | Main simulation: sweeps house price, down payment, interest rate, loan term, and extra yearly payments. Plots debt evolution and cost-to-price ratio. |
+| `app.py` | Interactive Dash web app — see details below. |
+| `buy_house.py` | Batch simulation: sweeps house price, down payment, interest rate, loan term, and extra yearly payments. Plots debt evolution and cost-to-price ratio. |
 | `utils.py` | Core financial functions: monthly payment formula (French amortization), debt-over-time simulation, cumulative interest tracking. |
+
+---
+
+## Interactive Simulator (`app.py`)
+
+A Dash web app for exploring mortgage scenarios interactively.
+
+**Run:**
+```bash
+uv run python house_payment/app.py
+# open http://127.0.0.1:8050
+```
+
+### Parameters
+
+| Parameter | Range | Notes |
+|-----------|-------|-------|
+| House Price | €50k – €1M | Step €10k |
+| Down Payment | €0 – house price | Step €1k, marks every €50k |
+| TAEG Range | 1% – 12% | Range slider — drives the rate band on all charts |
+| Loan Term | 5 – 40 years | |
+| Monthly Extra Payment | €0 – €10k | Step €100 |
+| Extra Payment Strategy | Reduce Time / Reduce Payment | See below |
+
+**Reduce Time** — installment stays fixed; extra payment shortens the loan term.
+**Reduce Payment** — term stays fixed; installment is recalculated each month on the reduced balance, so it decreases over time.
+
+### Metrics
+
+| Metric | Description |
+|--------|-------------|
+| Monthly Payment | Installment range across the TAEG band |
+| Total Interest | Total interest paid across the TAEG band |
+| Total Cost | House price + total interest |
+| Payoff | Years to pay off at mid TAEG (with extra payments if set) |
+| Interest / Loan | Total interest as % of the loan amount |
+| Extra Savings | Interest saved at mid TAEG vs. no extra payment |
+| Time Saved | Months saved vs. no extra payment (Reduce Time only) |
+| Initial LTV | Loan-to-Value at signing: `(price − down) / price × 100` |
+
+### Charts
+
+| Chart | Description |
+|-------|-------------|
+| Remaining Debt | Balance over time — shaded band between min/max TAEG + mid line |
+| Cumulative Interest | Total interest paid over time — same band format |
+| Monthly Breakdown & LTV | Stacked area (principal / interest) on left axis; LTV band on right axis |
+
+### Architecture
+
+The computation is encapsulated in `MortgageSchedule`, a dataclass that produces all series in `__post_init__`:
+
+- **`reduce_time`** — fully vectorised using the closed-form balance recurrence
+  `B[k] = loan·(1+r)^k − eff·[(1+r)^k − 1] / r`
+  where `eff = pmt + monthly_extra`. Payoff month is solved analytically.
+- **`reduce_payment`** — sequential loop (inherently non-vectorisable because each month's installment depends on the previous balance).
+
+All series are plain NumPy arrays of length `payoff_months`:
+`.balance`, `.interest`, `.principal`, `.cum_interest`, `.pmt_evolution`.
 
 ---
 

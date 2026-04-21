@@ -15,4 +15,7 @@ dependencies = [
     "rich>=14.0.0",
     "tqdm>=4.67.0",
     "python-dotenv>=1.1.0",
+    "dash>=2.14.0",
+    "dash-bootstrap-components>=1.5.0",
+    "plotly>=5.18.0",
 ]
