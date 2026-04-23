@@ -3,6 +3,8 @@ import numpy as np
 from typing import Tuple, List
 from box import Box
 
+
+
 def calculate_monthly_payment(house_price: int, interest_rate:float, years_to_pay:int) -> float:
     """Calculate the down payment"""
     month_interest_rate = interest_rate/12
